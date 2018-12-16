@@ -120,10 +120,8 @@ Optional DF >> N NaN rows for Heart Rate:  54  | Total rows:  977972  | % of NaN
 Optional DF >> NaN rows:  3493  | Original rows:  977972  | % of NaN rows:  0.36
 ```
 My choice is to delete all these `NaN` values. Of course they could be filled with other options. **I am open to any suggestion for this step**.<br><br>
-Once I have managed to drop all `NaN` values I have to drop even more. Why? Because the next note of the authors of the original Study:
-```
-Data labeled with activityID=0 should be discarded in any kind of analysis. This data mainly covers transient activities between performing different activities, e.g. going from one location to the next activity's location, or waiting for the preparation of some equipment. Also, different parts of one subject's recording (in the case when the data collection was aborted for some reason) was put together during these transient activities (noticeable by some “jumping” in the HR-data).
-```
+Once I have managed to drop all `NaN` values I have to drop even more. Why? Because the next note of the authors of the original Study:<br>
+*Data labeled with activityID=0 should be discarded in any kind of analysis. This data mainly covers transient activities between performing different activities, e.g. going from one location to the next activity's location, or waiting for the preparation of some equipment. Also, different parts of one subject's recording (in the case when the data collection was aborted for some reason) was put together during these transient activities (noticeable by some “jumping” in the HR-data).*<br><br>
 This step is going to remove many data. This Activity has many registers involved as you can see below:<br>
 ```
 Protocol DF rows for activity 0:  923391  > Total rows of the DF:  2844822  > 32.46 % of bad Data
@@ -288,29 +286,19 @@ Parameters: {'criterion': 'entropy', 'max_features': 10, 'n_estimators': 10}
 CPU times: user 5min 51s, sys: 2.78 s, total: 5min 54s
 Wall time: 47min 53s
 ```
-<br><br>
-**Random Forest** with `random_state = 42`:<br>
-```
-GridSearchCV(cv=5, error_score='raise-deprecating',
-       estimator=RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
-            max_depth=None, max_features='auto', max_leaf_nodes=None,
-            min_impurity_decrease=0.0, min_impurity_split=None,
-            min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators='warn', n_jobs=None,
-            oob_score=False, random_state=None, verbose=0,
-            warm_start=False),
-       fit_params=None, iid='warn', n_jobs=-1,
-       param_grid={'max_features': [3, 10], 'n_estimators': [10, 20], 'criterion': ['entropy'], 'random_state': [42]},
-       pre_dispatch='2*n_jobs', refit=True, return_train_score='warn',
-       scoring=None, verbose=0)
-
-```
-
 <br>
 
 ___
 ## 7. Conclusion
-
+Well, seems that the best model for this dataset is the Random Forest with: 
+```
+Model with rank: 1
+Mean validation score: 0.783 (std: 0.042)
+Parameters: {'criterion': 'entropy', 'max_features': 3, 'n_estimators': 20}
+```
+This could be better optimezed with time and better equipment so finnally we can use this model to predict which activity is going on and guide our users in a trainning course to improve his physical skills.<br><br>
+I would recomend this dataset only if you have a lot of time and a good computer to analyze the information due to the sampling frequency and its inherent vast volume of data.<br><br>
+I will be pleased to hear your thoughts and comments to improve this study. <br>Best regards,<br>Ivan
 <br>
 
 ___
