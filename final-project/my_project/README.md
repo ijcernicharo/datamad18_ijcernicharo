@@ -133,16 +133,127 @@ Optional DF rows for activity 0:  194846  > Total rows of the DF:  974425   > 20
 Also, I have made dropped the Users ID because is not longer needed in the study.<br><br>
 
 **Collinearity Study**
+Once I have cleaned it all from `NaN`, next step is to study the collinearity using the code below:<br>
+```
+df.corr()
+```
+These are the results with a heatmap, via `Seaborn` and `Matplotlib`<br>
+![Corr Heatmap](Figures/01_5-corr_before_feature_removal.png)<br><br>
+**All correlations below 0.6 will not appear in the figure above**<br><br>
+I have observed that we have correlation between hand and chest temperature. ALso I observe that all acceletartion sensors have a high collinearity with the second pair of sensors for each part of the body. Acceleration sensors indexed as 1 (or wihout index)
+are correlated with the sensors indexed as 2. But just with the sensors of he same body place. <br>
+I also have collinearity between Time and Heart Rate Features, between Chest Temp, Hand Temp and Ankle Temp, between Chest magnetic Z axis (Chest MZ), Chest acceleration Z axis sensors 1 and 2 (Chest AZ/AZ2).<br><br>
+Next step is to remove all these features that are shown below:<br>
+```
+Features to Drop:
+['Time (s)', 'Chest Temp (°C)', 'Chest MZ', 'Hand AX2', 'Hand AY2', 'Hand AZ2', 'Chest AX2', 'Chest AY2', 'Chest AZ2', 'Ankle AX2', 'Ankle AY2', 'Ankle AZ2']
+
+Number of Features droped:  12
+Final Features of columns:  30
+Final number of registers:  2701010
+```
+And finally lets check our correlation matrix is Fine to work in the further analysis and modeling (Figure below):<br>
+![Corr Heatmap 2](Figures/01_6-corr_after_feature_removal.png)<br><br>
+**Nice and smooth for Step 5 - Model Training and Evaluation**<br><br>
+To avoid **RAM** Overflow I save the cleaned data to a pickle file so I can open it whenever I want without running the first workflow
+```
+data.to_pickle('physical_activity.pkl')
+```
 
 <br>
 
 ___
 ## 5. Model Training and Evaluation
+My first thought was to use unsupervised learning, **KMEANS**, to clusterize data. To do that, I am going to create a new Feature with only one purpouse, check if the clusterization has any meaning.<br>
+So first step, creating a JSON file (dictionary) with all the activities and activities ID to relate them to any kind of labelization. I have proposed the variable Intensity3 `from 1-3 Scale` and Intensity5 `from 1-5 Scale`. The porpouse of these variables are just to check how good have been the clusterization and to simplify the 18 different types of Activities.<br><br>
+```
+ID | Name             | intesity3 | intensity5
+1    lying                  1           1
+2    sitting                1           1
+3    standing               1           2
+4    walking                2           2
+5    running                3           5
+6    cycling                3           4
+7    Nordic walking         3           3
+9    watching TV            1           1
+10   computer work          1           2
+11   car driving            2           2
+12   ascending stairs       2           4
+13   descending stairs      2           3
+16   vacuum cleaning        2           3
+17   ironing                1           2
+18   folding laundry        1           2
+19   house cleaning         2           3
+20   playing soccer         3           4
+24   rope jumping           3           5
+```
+Once this has been done, I proceed to calculate the Features `Intensity3` and `Intensity5` with the values of the dictionary
+```
+if sum([type(item)==str for item in act_lab.keys()])!=0:
+    df['Intensity3'] = list(map(lambda x: act_lab[str(x)]['intensity3'],df['Activity ID']))
+    df['Intensity5'] = list(map(lambda x: act_lab[str(x)]['intensity5'],df['Activity ID']))
+else:
+    df['Intensity3'] = list(map(lambda x: act_lab[x]['intensity3'],df['Activity ID']))
+    df['Intensity5'] = list(map(lambda x: act_lab[x]['intensity5'],df['Activity ID']))
+```
+and I drop the `Activity ID` Feature. Then, I use the `Standard Scaler` from sklearn module to scale all data not related with categorical Features (`Intensity3` and `Intensity5`).<br><br>
+Once this is done, I proceed to apply KMEANS to the data and plot results for 4 diffirent number of clusters [2,3,4,5]:<br><br>
+**2 CLUSTERS**<br>
+![2 clusters](Figures/02-Kmeans_2_clusters.png)<br><br>
+**3 CLUSTERS**<br>
+![3 clusters](Figures/02-Kmeans_3_clusters.png)<br><br>
+**4 CLUSTERS**<br>
+![4 clusters](Figures/02-Kmeans_4_clusters.png)<br><br>
+**5 CLUSTERS**<br>
+![5 clusters](Figures/02-Kmeans_5_clusters.png)<br><br>
+
+**KMEANS** Results: **Not** satisfactory!<br><br>
+None of these clusterizations are good to me, I think KMEANS is not capable to correctly clusterize my data so I proceed to use Random Forest.<br><br>
+First I am going to check If random forest could do the job and compare the results when it has 3 categories for the target, `Intensity3`, tp the case when it has 5 categories, `Intensity5` and print the confusion matrix with its Accuracies.<br><br>
+
+* **3 Categories:** `Intensity3`<br>
+![3 Cats](Figures/Random_forest_3_categories.png)<br><br>
+* **5 Categories:** `Intensity5`<br>
+![5 Cats](Figures/Random_forest_5_categories.png)<br><br>
+
+Accuracy for both are great but having in mind that for crossvalidation and grid search I need proficiency in computing I am going to select `Intensity3` Feature as target and forget from `Intensity5` Feature.<br><br>
+
 
 <br>
 
 ___
 ## 6. Model Validation
+As we have seen, **KMEANS** is not a good unsupervised model for this dataset. So once I have proven that **Random Forest** is a good candidate 
+```
+
+Num of categories of Intensity: 3
+
+	>> Accuracy:  0.9997719373331181
+
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='entropy',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=8,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+
+
+Num of categories of Intensity: 5
+
+	>> Accuracy:  0.9997334332465017
+
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='entropy',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=8,
+            oob_score=False, random_state=42, verbose=0, warm_start=False)
+
+CPU times: user 17min 28s, sys: 6.89 s, total: 17min 35s
+Wall time: 3min 23s
+
+```
+I have prepared a grid search routine to find the best model for 3 categories inside the target Feature (`Intensity3`).
 
 <br>
 
