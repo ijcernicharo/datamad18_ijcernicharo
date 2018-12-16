@@ -253,7 +253,58 @@ CPU times: user 17min 28s, sys: 6.89 s, total: 17min 35s
 Wall time: 3min 23s
 
 ```
-I have prepared a grid search routine to find the best model for 3 categories inside the target Feature (`Intensity3`).
+I have prepared a grid search routine to find the best model for 3 categories inside the target Feature (`Intensity3`).<br><br>
+
+**Random Forest** with `random_state = None`:<br>
+```
+GridSearchCV(cv=5, error_score='raise-deprecating',
+       estimator=RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators='warn', n_jobs=None,
+            oob_score=False, random_state=None, verbose=0,
+            warm_start=False),
+       fit_params=None, iid='warn', n_jobs=-1,
+       param_grid={'max_features': [3, 10], 'n_estimators': [10, 20], 'criterion': ['entropy']},
+       pre_dispatch='2*n_jobs', refit=True, return_train_score='warn',
+       scoring=None, verbose=0)
+
+GridSearchCV took 2873.80 seconds for 4 candidate parameter settings.
+
+Model with rank: 1
+Mean validation score: 0.783 (std: 0.042)
+Parameters: {'criterion': 'entropy', 'max_features': 3, 'n_estimators': 20}
+
+Model with rank: 2
+Mean validation score: 0.775 (std: 0.041)
+Parameters: {'criterion': 'entropy', 'max_features': 3, 'n_estimators': 10}
+
+Model with rank: 3
+Mean validation score: 0.760 (std: 0.060)
+Parameters: {'criterion': 'entropy', 'max_features': 10, 'n_estimators': 10}
+
+
+CPU times: user 5min 51s, sys: 2.78 s, total: 5min 54s
+Wall time: 47min 53s
+```
+<br><br>
+**Random Forest** with `random_state = 42`:<br>
+```
+GridSearchCV(cv=5, error_score='raise-deprecating',
+       estimator=RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators='warn', n_jobs=None,
+            oob_score=False, random_state=None, verbose=0,
+            warm_start=False),
+       fit_params=None, iid='warn', n_jobs=-1,
+       param_grid={'max_features': [3, 10], 'n_estimators': [10, 20], 'criterion': ['entropy'], 'random_state': [42]},
+       pre_dispatch='2*n_jobs', refit=True, return_train_score='warn',
+       scoring=None, verbose=0)
+
+```
 
 <br>
 
